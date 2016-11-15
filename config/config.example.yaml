@@ -1,0 +1,9 @@
+servers:
+  dev:
+    url: https://cloud.acquia.dev
+    key: abcd1234-1234-aaaa-bbbb-0123456789ab
+    secret: asdlasdkasnvaiosjdasdlkajslknmckalsdasdcasd=
+  prod:
+    url: https://cloud.acquia.com
+    key: 1234abcd-1234-aaaa-bbbb-0123456789ab
+    secret: awdwklvalskasdlkajiorjwmca;lsmd;aljv/aslkdj=

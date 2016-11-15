@@ -1,0 +1,17 @@
+{
+  "name": "vladpavlovic/n3rest",
+  "description": "Test N3 REST endpoints",
+  "homepage": "https://www.acquia.com",
+  "authors": [
+    {
+      "name": "Vlad Pavlovic",
+      "email": "vlad.pavlovic@acquia.com"
+    }
+  ],
+  "require": {
+    "php": "~5.6",
+    "acquia/http-hmac-php": "~3.1.0",
+    "guzzlehttp/guzzle": "~6.2",
+    "symfony/yaml": "2.6.4"
+  }
+}
