@@ -31,30 +31,6 @@
 <body style="padding: 1rem; overflow: scroll;">
 <?php
 
-/**
- * Replace only the first instance of a string.
- * @see: http://php.net/str_replace
- *
- * @param $search
- *
- * @param $replace
- *
- * @param $subject
- *
- * @return mixed
- *
- */
-function str_replace_first($search, $replace, $subject)
-{
-    $pos = strpos($subject, $search);
-
-    if ($pos !== false) {
-        return substr_replace($subject, $replace, $pos, strlen($search));
-    }
-
-    return $subject;
-}
-
 
 /**
  * Check if a string is proper json format.
