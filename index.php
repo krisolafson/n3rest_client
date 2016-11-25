@@ -26,7 +26,8 @@ $methods = ['delete', 'get', 'post', 'put'];
 $chosen_server = (isset($_REQUEST['server']) && isset($servers[$_REQUEST['server']])) ? $_REQUEST['server'] : key($servers);
 $location      = $servers[$chosen_server]['url'];
 $is_prod       = strpos($location, 'acquia.com')  !== FALSE;
-$url           = isset($_REQUEST['url']) ? str_replace('*', '%2A', $_REQUEST['url']) : $location . '/api/applications';
+$url           = isset($_REQUEST['url']) ? str_replace('*', '%2A', $_REQUEST['url']) : '/api/applications';
+$full_url      = $location . $url;
 $method        = isset($_REQUEST['method']) ? strtolower($_REQUEST['method']) : 'get';
 $body          = [];
 
@@ -56,13 +57,6 @@ if ($is_prod) {
 echo '<div class="el-select-list__options">';
 echo '<div class="md-virtual-repeat-scroller">';
 echo '<form name="bodyform" method="post" action="#">';
-echo '<select name="server">';
-foreach ($servers as $name => $server) {
-    echo '<option value="' . $name . '"';
-    echo $name == $chosen_server ? ' selected="selected"' : '';
-    echo '>' . $name . '</option>';
-}
-echo '</select>';
 
 echo '<select name="method" onchange="toggleForm(this.value);">';
 foreach ($methods as $m) {
@@ -71,6 +65,15 @@ foreach ($methods as $m) {
     echo '>' . strtoupper($m) . '</option>';
 }
 echo '</select>';
+
+echo '<select name="server">';
+foreach ($servers as $name => $server) {
+    echo '<option value="' . $name . '"';
+    echo $name == $chosen_server ? ' selected="selected"' : '';
+    echo '>(' . $name . ') ' . $server['url'] . '</option>';
+}
+echo '</select>';
+
 echo '<input type="text" name="url" id="url" value="' . $url . '" size="150" />';
 
 echo ($method == 'post' || $method == 'put') ?  '<fieldset id="body-fields-container" style="">' : '<fieldset id="body-fields-container" style="display: none;">';
@@ -115,28 +118,28 @@ if (!$_POST && $method != 'get') {
 try {
     switch ($method) {
         case 'post':
-            $response = $client->post($url, [
+            $response = $client->post($full_url, [
                 'verify' => false,
                 'json' => $body
             ]);
 
             break;
         case 'put':
-            $response = $client->put($url, [
+            $response = $client->put($full_url, [
                 'verify' => false,
                 'json' => $body
             ]);
 
             break;
         case 'delete':
-            $response = $client->delete($url, [
+            $response = $client->delete($full_url, [
                 'verify' => false,
             ]);
 
             break;
         case 'get':
         default:
-            $response = $client->get($url, ['verify' => false]);
+            $response = $client->get($full_url, ['verify' => false]);
 
             break;
     }

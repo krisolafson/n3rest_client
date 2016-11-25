@@ -71,9 +71,11 @@ function auto_link_text($text, $base_url) {
         $url_show = $url_full;
         $url_full = str_replace(['{', '}'], ['', ''], $url_full);
         $url_full = strpos($url_full, '//') === false ? '//' . $url_full : $url_full;
+        $cloud_url = explode('/api/', $url_full);
+        $cloud_url = '/api/' . end($cloud_url);
 
         return strpos($url_full, 'cloud.acquia') !== false ?
-            "<a rel=\"nofollow\" href=\"$base_url&url=$url_full\">$url_show</a>" :
+            "<a rel=\"nofollow\" href=\"$base_url&url=$cloud_url\">$url_show</a>" :
             "<a rel=\"nofollow\" target=\"_blank\" href=\"$url_full\">$url_show</a>";
     }, $text);
 }
