@@ -23,6 +23,7 @@ if (empty($config['servers'])) {
 $servers = $config['servers'];
 $methods = ['delete', 'get', 'post', 'put'];
 
+// First server in config.local.yaml is the default. Probably best to use vm there.
 $chosen_server = (isset($_REQUEST['server']) && isset($servers[$_REQUEST['server']])) ? $_REQUEST['server'] : key($servers);
 $location      = $servers[$chosen_server]['url'];
 $is_prod       = strpos($location, 'acquia.com')  !== FALSE;

@@ -74,7 +74,7 @@ function auto_link_text($text, $base_url) {
         $cloud_url = explode('/api/', $url_full);
         $cloud_url = '/api/' . end($cloud_url);
 
-        return strpos($url_full, 'cloud.acquia') !== false ?
+        return strpos($url_full, '.acquia') !== false ?
             "<a rel=\"nofollow\" href=\"$base_url&url=$cloud_url\">$url_show</a>" :
             "<a rel=\"nofollow\" target=\"_blank\" href=\"$url_full\">$url_show</a>";
     }, $text);
