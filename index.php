@@ -41,6 +41,7 @@ if ($_POST) {
 }
 $json_body = isset($_REQUEST['body']) ? $_REQUEST['body'] : '';
 $color     = $is_prod ? '#F00' : '#000';
+$preamble  = [];
 
 $key_id = $servers[$chosen_server]['key'];
 $secret = $servers[$chosen_server]['secret'];
@@ -147,24 +148,42 @@ try {
 }
 catch (Exception $exception) {
 
-    echo '<div class="md-virtual-repeat-scroller">';
-    echo '<strong>Error Code: </strong>' . $exception->getResponse()->getStatusCode() . '<br />';
-    echo '<strong>Reason: </strong>' . $exception->getResponse()->getReasonPhrase();
-    echo '</div>';
+    if ($exception instanceof \Acquia\Hmac\Exception\MalformedResponseException) {
+        echo '<strong>Exception: </strong>MalformedResponseException<br />';
+        $tags = preg_match_all('@<(\w+)\b.*?>.*?</\1>@si', $exception->getResponse()->getBody(), $matches);
 
-    if (!is_json($exception->getResponse()->getBody())) {
-        echo '<div>';
-        print $exception->getResponse()->getBody();
-        echo '</div>';
+        // Dump our html (usually debug var_dumps).
+        if ($tags) {
+            foreach ($matches[0] as $match) {
+                $preamble[] = "<pre>Malformed Response:\n" . $match . '</pre>';
+            }
+        }
+
+        // Get rid of the tags and forward the body along.
+        $body = preg_replace('@<(\w+)\b.*?>.*?</\1>@si', '', $exception->getResponse()->getBody());
+        $response = new \GuzzleHttp\Psr7\Response($exception->getResponse()->getStatusCode(), $exception->getResponse()->getHeaders(), $body);
     }
     else {
-        echo '<pre>';
-        print $exception->getResponse()->getBody();
-        echo '</pre>';
+        echo '<div class="md-virtual-repeat-scroller">';
+        echo '<strong>Error Code: </strong>' . $exception->getResponse()->getStatusCode() . '<br />';
+        echo '<strong>Reason: </strong>' . $exception->getResponse()->getReasonPhrase();
+        echo '</div>';
+
+        if (!is_json($exception->getResponse()->getBody())) {
+            echo '<div>';
+            print $exception->getResponse()->getBody();
+            echo '</div>';
+        }
+        else {
+            echo '<pre>';
+            print $exception->getResponse()->getBody();
+            echo '</pre>';
+        }
+        echo '</body>';
+        echo '</html>';
+        exit;
     }
-    echo '</body>';
-    echo '</html>';
-    exit;
+
 }
 
 echo '<div style="color: ' . $color . '">';
@@ -179,8 +198,13 @@ foreach ($response->getHeaders() as $key => $header) {
 }
 echo '</div>';
 
+
+// Show any preamble content.
+echo implode('<br />', $preamble);
+
+
 if (!is_json($response->getBody())) {
-    echo '<div >';
+    echo '<div>';
     print $response->getBody();
     echo '</div>';
 }
