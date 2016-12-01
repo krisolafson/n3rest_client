@@ -117,6 +117,8 @@ if (!$_POST && $method != 'get') {
     exit;
 }
 
+$start_time = microtime(true);
+
 try {
     switch ($method) {
         case 'post':
@@ -185,14 +187,26 @@ catch (Exception $exception) {
     }
 
 }
-
+$end_time = microtime(true);
 echo '<div style="color: ' . $color . '">';
 
 $base_url = $_SERVER['SCRIPT_NAME'] . '?server=' . $chosen_server;
 
 echo '</div>';
 echo '<div class="md-virtual-repeat-scroller">';
+$load_time = number_format($end_time - $start_time, 5);
 
+if ($load_time < 1) {
+    $load_color = '#3A8002';
+}
+elseif ($load_time < 2) {
+    $load_color = '#000000';
+}
+else {
+    $load_color = '#CC0000';
+}
+
+echo '<strong style="color: ' . $load_color . ';">Load Time: </strong>' . number_format($end_time - $start_time, 5) . ' sec.<br />';
 foreach ($response->getHeaders() as $key => $header) {
     echo '<strong>' . $key . '</strong>: ' . implode(", ", $header) . '<br />';
 }
