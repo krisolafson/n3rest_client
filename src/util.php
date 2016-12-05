@@ -10,8 +10,16 @@
         @import url("https://cloud.acquia.com/sites/all/themes/elemental_n3/assets/styles/elemental_n3.css");
     </style>
     <script type="text/javascript">
-        function addField() {
-            var html = '<input type="text" size="15" class="form-control" placeholder="Key" name="keys[]" value="">' +
+        function addHeaderField() {
+            var html = '<input type="text" size="15" class="form-control" placeholder="Header Name" name="header_keys[]" value="">' +
+                '<input type="text" size="35" class="form-control" placeholder="Header Value" name="header_values[]" value=""><br />';
+            var newChild = document.createElement('div');
+            newChild.innerHTML = html;
+            document.getElementById('header-fields').appendChild(newChild);
+        }
+
+        function addBodyField() {
+            var html = '<input type="text" size="15" class="form-control" placeholder="Name" name="keys[]" value="">' +
                 '<input type="text" size="35" class="form-control" placeholder="Value" name="values[]" value=""><br />';
             var newChild = document.createElement('div');
             newChild.innerHTML = html;
@@ -66,6 +74,18 @@ function auto_link_text($text, $base_url) {
     $pattern  = '#\b(([\w-]+://?|www[.])[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/|})))#';
 
     return preg_replace_callback($pattern, function ($matches) use ($base_url) {
+
+        // Add the on-behalf-of header.
+        if (isset($_REQUEST['x-on-behalf-of'])) {
+            $base_url .= '&x-on-behalf-of=' . $_REQUEST['x-on-behalf-of'];
+        }
+        elseif (isset($_REQUEST['header_keys']) && in_array('x-on-behalf-of', $_REQUEST['header_keys'])) {
+            foreach ($_REQUEST['header_keys'] as $key => $value) {
+                if ($value == 'x-on-behalf-of') {
+                    $base_url .= '&x-on-behalf-of=' . $_REQUEST['header_values'][$key];
+                }
+            }
+        }
 
         $url_full = $matches[0];
         $url_show = $url_full;

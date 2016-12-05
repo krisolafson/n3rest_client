@@ -1,7 +1,7 @@
 <?php
 
 require 'vendor/autoload.php';
-include_once 'src/util.php';
+include_once __DIR__ . '/src/util.php';
 
 use Acquia\Hmac\Guzzle\HmacAuthMiddleware;
 use Acquia\Hmac\Key;
@@ -31,6 +31,20 @@ $url           = isset($_REQUEST['url']) ? str_replace('*', '%2A', $_REQUEST['ur
 $full_url      = $location . $url;
 $method        = isset($_REQUEST['method']) ? strtolower($_REQUEST['method']) : 'get';
 $body          = [];
+$headers       = [];
+
+
+if (isset($_REQUEST['x-on-behalf-of'])) {
+    $headers['x-on-behalf-of'] = $_REQUEST['x-on-behalf-of'];
+}
+
+if (isset($_REQUEST['header_keys'])) {
+    foreach ($_REQUEST['header_keys'] as $key => $key_name) {
+        if ($key_name) {
+            $headers[$key_name] = isset($_REQUEST['header_values'][$key]) ? $_REQUEST['header_values'][$key] : null;
+        }
+    }
+}
 
 if ($_POST) {
     foreach ($_POST['keys'] as $key => $key_name) {
@@ -59,6 +73,19 @@ if ($is_prod) {
 echo '<div class="el-select-list__options">';
 echo '<div class="md-virtual-repeat-scroller">';
 echo '<form name="bodyform" method="post" action="#">';
+
+
+echo '<div id="header-fields">';
+foreach ($headers as $key => $value) {
+    echo '<div><input type="text" size="15" class="form-control" placeholder="Key" name="header_keys[]" value="' . $key . '">';
+    echo '<input type="text" size="45" class="form-control" placeholder="Value" name="header_values[]" value="' . $value . '">';
+    echo '<br /></div>';
+}
+echo '</div>';
+echo '<input type="button" value="Add Header" onclick="addHeaderField()"> ';
+
+$clear_url = './index.php?server=' . $chosen_server . '&url=' . $url;
+echo '<input type="button" value="Clear Headers" onclick="document.location.href=\'' . $clear_url . '\';"><br />';
 
 echo '<select name="method" onchange="toggleForm(this.value);">';
 foreach ($methods as $m) {
@@ -94,7 +121,7 @@ echo '<input type="text" size="35" class="form-control" placeholder="Value" name
 echo '<br /></div>';
 
 echo '</div>';
-echo '<br /><input type="button" value="Add Field" onclick="addField()">';
+echo '<br /><input type="button" value="Add Field" onclick="addBodyField()">';
 echo '</fieldset>';
 
 echo '<div class="el-card__footer__actions">';
@@ -123,13 +150,16 @@ try {
     switch ($method) {
         case 'post':
             $response = $client->post($full_url, [
+                'headers' => $headers,
                 'verify' => false,
-                'json' => $body
+                'json' => $body,
+
             ]);
 
             break;
         case 'put':
             $response = $client->put($full_url, [
+                'headers' => $headers,
                 'verify' => false,
                 'json' => $body
             ]);
@@ -137,13 +167,17 @@ try {
             break;
         case 'delete':
             $response = $client->delete($full_url, [
+                'headers' => $headers,
                 'verify' => false,
             ]);
 
             break;
         case 'get':
         default:
-            $response = $client->get($full_url, ['verify' => false]);
+            $response = $client->get($full_url, [
+                'headers' => $headers,
+                'verify' => false,
+            ]);
 
             break;
     }
@@ -227,9 +261,7 @@ else {
     $result = json_decode($response->getBody());
     $display = stripslashes($response->getBody());
     $display = auto_link_text($display, $base_url);
-
-    echo $display;
-
+    echo strip_tags($display, '<a>');
     echo '</pre>';
 }
 
